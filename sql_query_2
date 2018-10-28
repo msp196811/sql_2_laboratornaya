@@ -1,0 +1,48 @@
+1. 
+select TOP(1) Customer.FirstName, Customer.LastName,Customer.CompanyName, SalesOrderHeader.OrderDate, SalesOrderHeader.TotalDue 
+from SalesLT.SalesOrderHeader INNER join SalesLT.Customer
+on SalesOrderHeader.CustomerID = Customer.CustomerID
+ORDER BY TotalDue desc
+
+select Customer.FirstName, Customer.LastName,Customer.CompanyName, SalesOrderHeader.OrderDate, SalesOrderHeader.TotalDue 
+from SalesLT.SalesOrderHeader INNER join SalesLT.Customer
+on SalesOrderHeader.CustomerID = Customer.CustomerID
+where TotalDue = (select MAX(TotalDue) from SalesLT.SalesOrderHeader)
+
+2. 
+select C.FirstName, C.LastName,sum(OrderQty)
+from SalesLT.SalesOrderHeader H 
+left join SalesLT.SalesOrderDetail D
+on H.SalesOrderID = D.SalesOrderID 
+left join SalesLT.Customer C
+on H.CustomerID=C.CustomerID
+group by c.CustomerID,C.FirstName, C.LastName
+HAVING count(OrderQty)<20 
+
+select Customer.FirstName, Customer.LastName
+from SalesLT.customer
+where CustomerID in (select CustomerID 
+                    from SalesLT.SalesOrderHeader H 
+                    left join SalesLT.SalesOrderDetail D
+                    on H.SalesOrderID = D.SalesOrderID
+                    group by CustomerID
+                    HAVING sum(OrderQty)<20
+                    )
+
+3. 
+select A.City as Город, YEAR(H.DueDate) as Год, MONTH(H.DueDate) as Месяц, D.LineTotal as 'Сумма продаж'
+from SalesLT.SalesOrderHeader H 
+left join SalesLT.SalesOrderDetail D
+on H.SalesOrderID = D.SalesOrderID 
+left join SalesLT.Address A
+on H.BillToAddressID=A.AddressID
+group by A.City, H.DueDate, D.LineTotal
+
+
+4. 
+select top(10) H.ShipMethod as 'Служба доставки', H.SalesOrderNumber as 'Номер заказа', H.OrderDate as 'Дата Заказа', D.LineTotal as 'Сумма' 
+from SalesLT.SalesOrderHeader H 
+LEFT join SalesLT.SalesOrderDetail d 
+on h.SalesOrderID = d.SalesOrderID  
+group by h.ShipMethod, h.SalesOrderNumber, h.OrderDate, d.LineTotal
+order by d.LineTotal DESC
